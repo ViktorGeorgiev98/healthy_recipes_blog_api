@@ -10,6 +10,7 @@ from fastapi import (
 from app.database.models.user import User
 from app.database.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.schemas import user_schemas
 from app.utils import password_hash
 
@@ -34,3 +35,15 @@ async def register(user: user_schemas.UserCreate, db: AsyncSession = Depends(get
     await db.commit()
     await db.refresh(new_user)
     return new_user
+
+
+# get user
+@router.get(
+    "/{id}", status_code=status.HTTP_302_FOUND, response_model=user_schemas.UserOut
+)
+async def get_user_by_id(id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.id == id))
+    user = result.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=404, detail=f"User with id {id} not found!")
+    return user
