@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config.config import settings
 from app.database import database
+from app.database.models.like import Like
+from app.database.models.recipe import Recipe
+from app.database.models.user import User
 
 # initialize the fastapi instance and configure middleware for cors
 app = FastAPI()

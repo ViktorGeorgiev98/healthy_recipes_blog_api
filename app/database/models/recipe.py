@@ -12,7 +12,7 @@ class Recipe(Base):
     title = Column(String, nullable=False)
     ingredients = Column(String, nullable=False)
     image_path = Column(String, nullable=True)
-    likes = Column(Integer, nullable=False, server_default=0)
+    likes = Column(Integer, nullable=False, server_default=text("0"))
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default="now()"
     )
