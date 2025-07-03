@@ -28,7 +28,7 @@ async def get_db():
     db = AsyncSessionLocal()
     try:
         yield db
-    except:
+    except Exception as e:
         print(f"Issue with getting DB: {e}")
         raise
     finally:

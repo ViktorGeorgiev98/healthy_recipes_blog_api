@@ -39,7 +39,7 @@ async def register(user: user_schemas.UserCreate, db: AsyncSession = Depends(get
 
 # get user
 @router.get(
-    "/{id}", status_code=status.HTTP_302_FOUND, response_model=user_schemas.UserOut
+    "/{id}", status_code=status.HTTP_200_OK, response_model=user_schemas.UserOut
 )
 async def get_user_by_id(id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.id == id))
