@@ -5,6 +5,7 @@ from app.database import database
 from app.database.models.like import Like
 from app.database.models.recipe import Recipe
 from app.database.models.user import User
+from app.routers import user
 
 # initialize the fastapi instance and configure middleware for cors
 app = FastAPI()
@@ -27,3 +28,6 @@ async def on_startup():
 @app.get("/")
 async def root():
     return {"message": "This is the healthy recipes blog API"}
+
+
+app.include_router(user.router)
