@@ -5,6 +5,9 @@ import re
 
 """
 User related pydantic schemas
+Each different schema defines what is mandatory when using an instance of that class
+Also, it defines what information is returned from a request to the db
+useful to always make sure we send all required data, but to not receive passwords as response
 """
 
 

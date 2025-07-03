@@ -18,5 +18,10 @@ async def hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-async def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+async def verify_password(password: str) -> bool:
+    """
+    return the boolean result of bcrypt comparing the hashed password with the plain one
+    if they are equal, the user wrote the correct password
+    """
+    hashed_password = await hash(password=password)
+    return pwd_context.verify(password, hashed_password)
