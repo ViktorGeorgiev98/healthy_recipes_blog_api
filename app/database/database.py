@@ -29,6 +29,7 @@ async def get_db():
     try:
         yield db
     except:
-        print("Issue with getting DB, please check")
+        print(f"Issue with getting DB: {e}")
+        raise
     finally:
-        db.close()
+        await db.close()

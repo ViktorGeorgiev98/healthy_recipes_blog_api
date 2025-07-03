@@ -31,6 +31,6 @@ async def register(user: user_schemas.UserCreate, db: AsyncSession = Depends(get
     user.password = hashed_password
     new_user = User(**user.dict())
     db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    await db.commit()
+    await db.refresh(new_user)
     return new_user
