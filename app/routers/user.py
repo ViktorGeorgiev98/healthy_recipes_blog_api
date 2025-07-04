@@ -13,7 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession  # async creation of DB session
 from sqlalchemy.future import select
 from app.schemas import user_schemas
 from app.utils import password_hash
-
+from fastapi.security import OAuth2PasswordRequestForm
+from app.auth import oauth2
 
 """
 Create the router from the API router imported from fastapi
@@ -98,8 +99,11 @@ async def get_user_by_id(id: int, db: AsyncSession = Depends(get_db)):
 # Login
 # test password => 12345!aA
 @router.post("/login", status_code=status.HTTP_200_OK)
-async def login(user_login: user_schemas.UserLogin, db: AsyncSession = Depends(get_db)):
-    query = await db.execute(select(User).where(User.email == user_login.email))
+async def login(
+    user_login: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
+    query = await db.execute(select(User).where(User.email == user_login.username))
     user = query.scalars().first()
     if user is None:
         raise HTTPException(status_code=404, detail="Invalid credentials!")
@@ -111,4 +115,6 @@ async def login(user_login: user_schemas.UserLogin, db: AsyncSession = Depends(g
     )
     if not password_is_correct:
         raise HTTPException(status_code=404, detail="Invalid credentials!")
-    return user
+
+    access_token = oauth2.create_access_token(data={"user_id": user.id})
+    return {"access_token": access_token, "token_type": "bearer"}
