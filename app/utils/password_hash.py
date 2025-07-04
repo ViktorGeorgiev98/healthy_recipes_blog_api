@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-async def hash(password: str) -> str:
+def hash(password: str) -> str:
     """
     Hash a password using the configured hashing context.
 
@@ -18,10 +18,9 @@ async def hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-async def verify_password(password: str) -> bool:
+def verify_password(plain_password: str, hashed_password) -> bool:
     """
     return the boolean result of bcrypt comparing the hashed password with the plain one
     if they are equal, the user wrote the correct password
     """
-    hashed_password = await hash(password=password)
-    return pwd_context.verify(password, hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)

@@ -31,7 +31,9 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
     response_model=user_schemas.UserOut,
 )
-async def register(user: user_schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(
+    user_register: user_schemas.UserCreate, db: AsyncSession = Depends(get_db)
+):
     """
     Register a new user.
 
@@ -49,9 +51,16 @@ async def register(user: user_schemas.UserCreate, db: AsyncSession = Depends(get
     Raises:
         HTTPException: If the user cannot be created (e.g., due to a database error or duplicate email).
     """
-    hashed_password = await password_hash.hash(user.password)
-    user.password = hashed_password
-    new_user = User(**user.dict())
+    query = await db.execute(select(User).where(User.email == user_register.email))
+    user = query.scalars().first()
+    if user:
+        raise HTTPException(
+            status_code=404,
+            detail=f"User with email {user_register.email} already exists!",
+        )
+    hashed_password = password_hash.hash(user_register.password)
+    user_register.password = hashed_password
+    new_user = User(**user_register.dict())
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
@@ -79,8 +88,27 @@ async def get_user_by_id(id: int, db: AsyncSession = Depends(get_db)):
     Raises:
         HTTPException: If no user with the given ID exists (404 Not Found).
     """
-    result = await db.execute(select(User).where(User.id == id))
-    user = result.scalars().first()
+    query = await db.execute(select(User).where(User.id == id))
+    user = query.scalars().first()
     if user is None:
         raise HTTPException(status_code=404, detail=f"User with id {id} not found!")
+    return user
+
+
+# Login
+# test password => 12345!aA
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login(user_login: user_schemas.UserLogin, db: AsyncSession = Depends(get_db)):
+    query = await db.execute(select(User).where(User.email == user_login.email))
+    user = query.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="Invalid credentials!")
+    # need to compare the plain password the current user has written with the hashed password
+    # of the user found in the DB with the provided email
+    # That is very important, otherwise you get bugs
+    password_is_correct = password_hash.verify_password(
+        user_login.password, user.password
+    )
+    if not password_is_correct:
+        raise HTTPException(status_code=404, detail="Invalid credentials!")
     return user
