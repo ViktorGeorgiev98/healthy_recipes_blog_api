@@ -5,7 +5,7 @@ from app.database import database
 from app.database.models.like import Like
 from app.database.models.recipe import Recipe
 from app.database.models.user import User
-from app.routers import user
+from app.routers import user, recipe
 
 # initialize the fastapi instance and configure middleware for cors
 app = FastAPI()
@@ -31,3 +31,4 @@ async def root():
 
 
 app.include_router(user.router)
+app.include_router(recipe.router)

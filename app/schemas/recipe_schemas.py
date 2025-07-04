@@ -6,6 +6,7 @@ from datetime import datetime
 class Recipe_Create(BaseModel):
     title: str
     ingredients: str
+    description: str
 
 
 class Recipe_Out(BaseModel):
@@ -15,3 +16,4 @@ class Recipe_Out(BaseModel):
     image_path: Optional[str] = None
     likes: int
     created_at: datetime
+    description: str
