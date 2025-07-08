@@ -6,6 +6,7 @@ from app.database.models.like import Like
 from app.database.models.recipe import Recipe
 from app.database.models.user import User
 from app.routers import user, recipe
+from fastapi.staticfiles import StaticFiles
 
 # initialize the fastapi instance and configure middleware for cors
 app = FastAPI()
@@ -16,6 +17,7 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 # create db and tables if required
