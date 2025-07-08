@@ -10,10 +10,11 @@ class Recipe_Create(BaseModel):
 
 
 class Recipe_Out(BaseModel):
-    id: str
+    id: int
     title: str
     ingredients: str
     image_path: Optional[str] = None
     likes: int
     created_at: datetime
     description: str
+    owner_id: int
