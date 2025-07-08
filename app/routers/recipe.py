@@ -14,6 +14,7 @@ from app.database.models.recipe import Recipe
 from app.database.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession  # async creation of DB session
 from sqlalchemy.future import select
+from sqlalchemy import desc
 from app.schemas import recipe_schemas
 from app.auth import oauth2
 import uuid, os, shutil
@@ -22,17 +23,21 @@ import uuid, os, shutil
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 
-# get all recipes
+# get all recipes or get recipes with limit and offset. Limit is 100 by default
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[recipe_schemas.Recipe_Out]) # must be a list of recipes, otherwise it will not work
-async def get_all_recipes(db: AsyncSession = Depends(get_db)):
+async def get_all_recipes(db: AsyncSession = Depends(get_db), limit: int = 100, offset: int = 0):
     """
     Get all recipes from the database.
+    You can use this endpoint to retrieve a list of all recipes stored in the database.
+    You can also add limit and offset parameters to paginate the results.
+    By default, it returns up to 100 recipes with 0 offset.
+    This endpoint returns a list of recipes, each represented by the `Recipe_Out` schema.
+    Also, it will return them by the order they were created in the database starting from the newest
     """
-    result = await db.execute(select(Recipe))
+    result = await db.execute(select(Recipe).order_by(desc(Recipe.created_at)).limit(limit).offset(offset))
     recipes = result.scalars().all()
     return recipes
 
-# get recipes with limit
 
 # get recipe by id
 
