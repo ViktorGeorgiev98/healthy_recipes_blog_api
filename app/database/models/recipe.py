@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 
 class Recipe(Base):
@@ -15,10 +16,10 @@ class Recipe(Base):
     image_path = Column(String, nullable=True)
     likes = Column(Integer, nullable=False, server_default=text("0"))
     created_at = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default="now()"
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
+    
     owner_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
-
     owner = relationship("User")
