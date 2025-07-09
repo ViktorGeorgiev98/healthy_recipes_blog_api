@@ -139,6 +139,77 @@ async def create_recipe(
 
 
 # Update recipe
+@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=recipe_schemas.Recipe_Out)
+async def update_recipe(
+    id: int,
+    title: str = Form(...),
+    ingredients: str = Form(...),
+    description: str = Form(...),
+    image: UploadFile = File(None),  # Optional image
+    db: AsyncSession = Depends(get_db),
+    current_user: int = Depends(oauth2.get_current_user),
+):
+    """
+    Update an existing recipe by its ID.
+    
+    This endpoint allows you to modify the title, ingredients, description, and optionally upload a new image for the recipe.
+    
+    Parameters:
+    - **id**: The unique identifier of the recipe to update.
+    - **title**: The new title of the recipe (required).
+    - **ingredients**: The new ingredients used in the recipe (required).
+    - **description**: The updated description of the recipe (required).
+    - **image**: Optional new image file upload (JPG/PNG/etc.).
+    - **db**: SQLAlchemy asynchronous session (injected via dependency).
+    - **current_user**: The currently authenticated user (injected via dependency).
+    
+    Returns:
+    - The updated recipe as a `Recipe_Out` schema.
+    
+    Raises:
+    - **HTTPException 404** if the recipe with the specified ID does not exist.
+    """
+    if not title or not ingredients or not description:
+        raise HTTPException(
+            status_code=404,
+            detail="Title, description and ingredients fields are mandatory!",
+        )
+    
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    recipe = result.scalar_one_or_none()
+    
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    
+    if recipe.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="You do not have permission to update this recipe"
+        )
+    
+    # Update fields
+    recipe.title = title
+    recipe.ingredients = ingredients
+    recipe.description = description
+    
+    # Handle optional image upload
+    if image:
+        extension = image.filename.split(".")[-1]
+        unique_name = f"{uuid.uuid4()}.{extension}"
+        upload_dir = "app/static/images"
+        os.makedirs(upload_dir, exist_ok=True)
+        file_location = os.path.join(upload_dir, unique_name)
+        
+        # Save uploaded file to the specified location
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+            
+        # Relative path to be saved in the database (publicly accessible if static is mounted)
+        recipe.image_path = f"/static/images/{unique_name}"
+    
+    await db.commit()
+    await db.refresh(recipe)
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    return result.scalars().one_or_none()
 
 # Delete recipe
 
