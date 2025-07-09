@@ -25,16 +25,18 @@ router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 # get all recipes or get recipes with limit and offset. Limit is 100 by default
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[recipe_schemas.Recipe_Out]) # must be a list of recipes, otherwise it will not work
-async def get_all_recipes(db: AsyncSession = Depends(get_db), limit: int = 100, offset: int = 0):
+async def get_all_recipes(db: AsyncSession = Depends(get_db), limit: int = 100, offset: int = 0, order_by: str = "created_at"):
     """
     Get all recipes from the database.
     You can use this endpoint to retrieve a list of all recipes stored in the database.
     You can also add limit and offset parameters to paginate the results.
     By default, it returns up to 100 recipes with 0 offset.
     This endpoint returns a list of recipes, each represented by the `Recipe_Out` schema.
-    Also, it will return them by the order they were created in the database starting from the newest
+    Also, it will return them by the order they were created in the database starting from the newest by default.
+    The `order_by` parameter can be used to specify the field to sort by, defaulting to `created_at`.
+    You can change it to `likes` if you want to sort by the number of likes.
     """
-    result = await db.execute(select(Recipe).order_by(desc(Recipe.created_at)).limit(limit).offset(offset))
+    result = await db.execute(select(Recipe).order_by(desc(order_by)).limit(limit).offset(offset))
     recipes = result.scalars().all()
     return recipes
 
