@@ -42,7 +42,29 @@ async def get_all_recipes(db: AsyncSession = Depends(get_db), limit: int = 100, 
 
 
 # get recipe by id
-
+@router.get("/{id}", status_code=status.HTTP_200_OK, response_model=recipe_schemas.Recipe_Out)
+async def get_recipe_by_id(id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Get a recipe by its ID.
+    
+    This endpoint retrieves a specific recipe from the database using its unique identifier.
+    If the recipe is not found, it raises a 404 HTTP exception.
+    
+    Parameters:
+    - **id**: The unique identifier of the recipe to retrieve.
+    - **db**: SQLAlchemy asynchronous session (injected via dependency).
+    
+    Returns:
+    - The recipe as a `Recipe_Out` schema.
+    
+    Raises:
+    - **HTTPException 404** if the recipe with the specified ID does not exist.
+    """
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    recipe = result.scalar_one_or_none()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    return recipe
 
 # create recipe
 """
