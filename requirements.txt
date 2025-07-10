@@ -13,3 +13,4 @@ pytest
 pytest-asyncio
 pytest-cov
 gunicorn
+pydantic_settings
