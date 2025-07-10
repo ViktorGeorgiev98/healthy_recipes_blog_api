@@ -1,4 +1,6 @@
 from pydantic_settings import BaseSettings
+from pydantic import Field
+from typing import Optional
 
 """
     This class is used to store the settings for the application.
@@ -27,17 +29,20 @@ from pydantic_settings import BaseSettings
 
 # railway
 class Settings(BaseSettings):
-    pgdata: str
-    pgdatabase: str
-    pghost: str
-    pgpassword: str
-    pgport: str
-    pguser: str
-    postgres_db: str
-    postgres_password: str
-    database_url: str
-    postgres_user: str
-    database_public_url: str
+    # Railway
+    database_url: Optional[str] = Field(default=None)
+
+    # Local (used only if database_url is None)
+    database_hostname: Optional[str] = Field(default=None)
+    database_port: Optional[str] = Field(default="5432")
+    database_password: Optional[str] = Field(default=None)
+    database_name: Optional[str] = Field(default=None)
+    database_username: Optional[str] = Field(default=None)
+
+    # Auth settings
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
 
     class Config:
         env_file = ".env"
