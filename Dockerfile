@@ -15,6 +15,7 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
+COPY .env .env
 
 # Expose port (not used by Heroku, but good practice)
 EXPOSE 8000
