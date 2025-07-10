@@ -185,6 +185,7 @@ async def update_recipe(
         raise HTTPException(
             status_code=403, detail="You do not have permission to update this recipe"
         )
+    print(recipe.owner_id, current_user.id)
     
     # Update fields
     recipe.title = title
@@ -212,5 +213,37 @@ async def update_recipe(
     return result.scalars().one_or_none()
 
 # Delete recipe
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_recipe(id: int, db: AsyncSession = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    """
+    Delete a recipe by its ID.
+    
+    This endpoint allows you to delete a specific recipe from the database.
+    
+    Parameters:
+    - **id**: The unique identifier of the recipe to delete.
+    - **db**: SQLAlchemy asynchronous session (injected via dependency).
+    - **current_user**: The currently authenticated user (injected via dependency).
+    
+    Returns:
+    - No content (204) if the deletion is successful.
+    
+    Raises:
+    - **HTTPException 404** if the recipe with the specified ID does not exist.
+    - **HTTPException 403** if the user does not have permission to delete the recipe.
+    """
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    recipe = result.scalar_one_or_none()
+    
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    
+    if recipe.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="You do not have permission to delete this recipe"
+        )
+    
+    await db.delete(recipe)
+    await db.commit()
 
 # Like recipe
