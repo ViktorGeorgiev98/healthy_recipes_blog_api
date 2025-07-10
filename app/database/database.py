@@ -4,7 +4,12 @@ from app.config.config import settings
 
 
 # Create the database URL
-DATABASE_URL = f"postgresql+asyncpg://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+# local
+# DATABASE_URL = f"postgresql+asyncpg://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+# railway
+DATABASE_URL = settings.database_url
+
+
 
 # Create the engine
 engine = create_async_engine(DATABASE_URL, echo=True)
