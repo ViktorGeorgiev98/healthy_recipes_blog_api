@@ -297,3 +297,50 @@ async def like_recipe(id: int, db: AsyncSession = Depends(get_db), current_user:
 
 
 # Remove like from recipe
+@router.delete("/{id}/like", status_code=status.HTTP_202_ACCEPTED, response_model=recipe_schemas.Recipe_Out)
+async def remove_like_from_recipe(id: int, db: AsyncSession = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    """
+    Remove a like from a recipe by its ID.
+    
+    This endpoint allows a user to remove their like from a specific recipe.
+    
+    Parameters:
+    - **id**: The unique identifier of the recipe to unlike.
+    - **db**: SQLAlchemy asynchronous session (injected via dependency).
+    - **current_user**: The currently authenticated user (injected via dependency).
+    
+    Returns:
+    - No content (204) if the unlike operation is successful.
+    
+    Raises:
+    - **HTTPException 404** if the recipe with the specified ID does not exist.
+    - **HTTPException 403** if the user does not have permission to unlike the recipe.
+    """
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    recipe = result.scalar_one_or_none()
+    
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    
+    if recipe.owner_id == current_user.id:
+        raise HTTPException(
+            status_code=403, detail="You cannot remove like from your own recipe"
+        )
+    
+    result_likes = await db.execute(
+        select(Like).where(Like.user_id == current_user.id, Like.recipe_id == id)
+    )
+    existing_like = result_likes.scalar_one_or_none()
+    
+    if not existing_like:
+        raise HTTPException(status_code=404, detail="You have not liked this recipe")
+    
+        
+
+    
+    await db.delete(existing_like)
+    await db.commit()
+    
+    recipe.likes -= 1  # Decrement the like count
+    await db.commit()
+    return recipe
