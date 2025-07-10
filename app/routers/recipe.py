@@ -11,6 +11,7 @@ from fastapi import (
     Form,
 )
 from app.database.models.recipe import Recipe
+from app.database.models.like import Like
 from app.database.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession  # async creation of DB session
 from sqlalchemy.future import select
@@ -247,3 +248,52 @@ async def delete_recipe(id: int, db: AsyncSession = Depends(get_db), current_use
     await db.commit()
 
 # Like recipe
+@router.post("/{id}/like", status_code=status.HTTP_202_ACCEPTED, response_model=recipe_schemas.Recipe_Out)
+async def like_recipe(id: int, db: AsyncSession = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    """
+    Like a recipe by its ID.
+    
+    This endpoint allows a user to like a specific recipe. It increments the like count for the recipe
+    and returns the updated recipe information.
+    
+    Parameters:
+    - **id**: The unique identifier of the recipe to like.
+    - **db**: SQLAlchemy asynchronous session (injected via dependency).
+    - **current_user**: The currently authenticated user (injected via dependency).
+    
+    Returns:
+    - The updated recipe as a `Recipe_Out` schema.
+    
+    Raises:
+    - **HTTPException 404** if the recipe with the specified ID does not exist.
+    """
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    recipe = result.scalar_one_or_none()
+    
+    result = await db.execute(select(Recipe).where(Recipe.id == id))
+    recipe = result.scalar_one_or_none()
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    if current_user.id == recipe.owner_id:
+        raise HTTPException(
+            status_code=403, detail="You cannot like your own recipe"
+        )
+    result_likes = await db.execute(
+        select(Like).where(Like.user_id == current_user.id, Like.recipe_id == id)
+    )
+    existing_like = result_likes.scalar_one_or_none()
+    if existing_like:
+        raise HTTPException(
+            status_code=400, detail="You have already liked this recipe"
+        )
+    new_like = Like(user_id=current_user.id, recipe_id=id)
+    db.add(new_like)
+    await db.commit()  
+    await db.refresh(new_like)
+    recipe.likes += 1  # Increment the like count
+    await db.commit()
+    await db.refresh(recipe)
+    return recipe
+
+
+# Remove like from recipe
