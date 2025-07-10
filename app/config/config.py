@@ -10,16 +10,34 @@ from pydantic_settings import BaseSettings
     At the end of the file we initialize the settings object and we can use it in the application.
 """
 
+# local .env file
+# class Settings(BaseSettings):
+#     database_hostname: str
+#     database_port: str
+#     database_password: str
+#     database_name: str
+#     database_username: str
+#     secret_key: str
+#     algorithm: str
+#     access_token_expire_minutes: int
+#     database_url: str
 
+#     class Config:
+#         env_file = ".env"
+
+# railway
 class Settings(BaseSettings):
-    database_hostname: str
-    database_port: str
-    database_password: str
-    database_name: str
-    database_username: str
-    secret_key: str
-    algorithm: str
-    access_token_expire_minutes: int
+    pgdata: str
+    pgdatabase: str
+    pghost: str
+    pgpassword: str
+    pgport: str
+    pguser: str
+    postgres_db: str
+    postgres_password: str
+    database_url: str
+    postgres_user: str
+    database_public_url: str
 
     class Config:
         env_file = ".env"
