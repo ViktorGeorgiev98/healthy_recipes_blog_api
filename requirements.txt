@@ -15,4 +15,4 @@ pytest-cov
 gunicorn
 pydantic_settings
 pydantic[email]
-psycopg2
+asyncpg 
