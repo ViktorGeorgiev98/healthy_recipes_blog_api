@@ -117,4 +117,11 @@ async def login(
         raise HTTPException(status_code=404, detail="Invalid credentials!")
 
     access_token = oauth2.create_access_token(data={"user_id": user.id})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "access_token": access_token,
+            "token_type": "bearer",
+        }
+    }
