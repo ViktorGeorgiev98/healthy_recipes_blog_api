@@ -4,7 +4,7 @@ A FastAPI-based RESTful API for managing healthy recipes with authentication, re
 
 Main URL => [https://healthyrecipesblogapi-production.up.railway.app/](https://healthy-recipes-blog-api.onrender.com/)
 
-Please go to [https://healthyrecipesblogapi-production.up.railway.app](https://healthy-recipes-blog-api.onrender.com/)/docs for full documentation and requirements for the usage of the requests
+Please go to [https://healthyrecipesblogapi-production.up.railway.app](https://healthy-recipes-blog-api.onrender.com/docs) for full documentation and requirements for the usage of the requests
 
 ---
 
